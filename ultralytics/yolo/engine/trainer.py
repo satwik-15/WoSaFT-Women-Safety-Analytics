@@ -17,7 +17,7 @@ import torch.distributed as dist
 import torch.nn as nn
 from omegaconf import OmegaConf  # noqa
 from omegaconf import open_dict
-from torch.cuda import amp
+from torch import amp
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import lr_scheduler
 from tqdm import tqdm
@@ -287,7 +287,8 @@ class BaseTrainer:
                             x['momentum'] = np.interp(ni, xi, [self.args.warmup_momentum, self.args.momentum])
 
                 # Forward
-                with torch.cuda.amp.autocast(self.amp):
+                with torch.amp.autocast('cuda', enabled=self.amp):
+                # with torch.cuda.amp.autocast(self.amp):
                     batch = self.preprocess_batch(batch)
                     preds = self.model(batch["img"])
                     self.loss, self.loss_items = self.criterion(preds, batch)
